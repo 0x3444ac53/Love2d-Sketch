@@ -42,12 +42,13 @@
     (set circle.y  (+ circle.y  (* dt circle.vy)))
     (set circle.vx (* circle.vx 0.99))
     (set circle.vy (* circle.vy 0.99))
-    (local width (. (love.window.getMode) :width))
-    (local height (. (love.window.getMode) :height))
+    (let [(width height _) (love.window.getMode)]
     (when (> (+ circle.x circle.radius) width) (set circle.vx (* -1 (math.abs circle.vx))))
-    (when (< (+ circle.x circle.radius) 0) (set circle.vx (math.abs circle.vx)))
+    (when (< (- circle.x circle.radius) 0) (set circle.vx (math.abs circle.vx)))
     (when (> (+ circle.y circle.radius) height) (set circle.vy (* -1 (math.abs circle.vy))))
-    (when (< (+ circle.y circle.radius) 0) (set circle.vy (math.abs circle.vy))))
+    (when (< (- circle.y circle.radius) 0) (set circle.vy (math.abs circle.vy))))
+    (print (.. "x:" circle.x " y:" circle.y 
+                             " vy: " circle.vy " vx:" circle.vx) 100 100))
 
 (fn love.draw []
   (love.graphics.circle "line" circle.x circle.y circle.radius))
