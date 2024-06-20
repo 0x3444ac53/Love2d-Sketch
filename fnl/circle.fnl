@@ -8,4 +8,5 @@
         :down  #(tset (. $1 :a) :y 200)
         :up    #(tset (. $1 :a) :y -200)
         :g     #(tset $1 :radius (math.abs (+ (. $1 :radius ) 20)))
-        :h     #(tset $1 :radius (math.abs (- (. $1 :radius) 20)))}}
+        :h     #(tset $1 :radius (math.abs (- (. $1 :radius) 20)))}
+ :reset (fn [tbl] (set tbl.a.x 0) (set tbl.a.y 0))}
