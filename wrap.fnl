@@ -1,5 +1,7 @@
 (local love (require "love"))
 
+(var circles [])
+
 (var circle {:x 100 :y 100
               :vx 0 :vy 0
               :ax 20 :ay 20
@@ -12,29 +14,15 @@
   (tset current-keys key true))
 (fn love.load []
   (love.window.setMode 0 0 {:fullscreen true})
-  (set circle 
-       {:v {:x 0 :y 0}
-        :a {:x 0 :y 0}
-        :p {:x 100 :y 100}
-        :drag-factor 0.999
-        :radius 50
-        :keys {:right #(tset (. $1 :a) :x 200)
-               :left  (fn [tbl]
-                        (set tbl.a.x -200))
-               :down  (fn [tbl]
-                        (set tbl.a.y 200))
-               :up    (fn [tbl]
-                        (set tbl.a.y -200))
-               :g     (fn [tbl]
-                        (set tbl.radius (math.abs (+ tbl.radius 20))))
-               :h     (fn [tbl]
-                        (set tbl.radius (math.abs (- tbl.radius 20))))}}))
+  (set
+    circle (require :fnl.circle)))
 
 (fn handle_keys [tbl current-keys key-map]
   (let []
     (var ntbl (collect [k v (pairs tbl)] (values k v)))
   (each [k _ (pairs current-keys)]
-    ((. key-map k) ntbl))
+    (let [ok? (. key-map k)] 
+      (ok? ntbl)))
   ntbl))
 
 
@@ -52,13 +40,16 @@
         (values k (let [{: x : y} v df? (. tbl :df)]
                     {:x (* (if df? df? 1) (+ x (* dt tbl.v.x)))
                      :y (* (if df? df? 1) (+ y (* dt tbl.v.y)))}))
-        (values k v)))))
+        (values k v)))
+    ))
+
+
 
 ; separate out (f do_physics [obj])
 (fn love.update [dt]
   (set circle.a.x 0)
   (set circle.a.y 0)
-  (set circle 
+  (set circle
        (do-forces
          (handle_keys circle 
                       current-keys circle.keys) dt))
