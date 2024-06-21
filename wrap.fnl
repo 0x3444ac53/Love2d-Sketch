@@ -51,10 +51,10 @@
 
 (fn do-border-collision [w h tbl]
   (let [ntbl (collect [k v (pairs tbl)] (values k v))]
-      (when (>= (+ ntbl.p.x ntbl.radius) w) (set ntbl.v.x (* .8 (- (math.abs ntbl.v.x)))))
-      (when (<= (- ntbl.p.x ntbl.radius) 0) (set ntbl.v.x (* .8 (math.abs ntbl.v.x))))
-      (when (>= (+ ntbl.p.y ntbl.radius) h) (set ntbl.v.y (* .8 (- (math.abs ntbl.v.y)))))
-      (when (<= (- ntbl.p.y ntbl.radius) 0) (set ntbl.v.y (* .8 (math.abs ntbl.v.y))))
+      (when (>= (+ ntbl.p.x ntbl.radius) w) (let [] (set ntbl.v.x (* .8 (- (math.abs ntbl.v.x)))) (set ntbl.p.x (- w ntbl.radius))))
+      (when (<= (- ntbl.p.x ntbl.radius) 0) (let [] (set ntbl.v.x (* .8 (math.abs ntbl.v.x))) (set ntbl.p.x ntbl.radius)))
+      (when (>= (+ ntbl.p.y ntbl.radius) h) (let [] (set ntbl.v.y (* .8 (- (math.abs ntbl.v.y)))) (set ntbl.p.y (- h ntbl.radius))))
+      (when (<= (- ntbl.p.y ntbl.radius) 0) (let [] (set ntbl.v.y (* .8 (math.abs ntbl.v.y))) (set ntbl.p.y ntbl.radius)))
     ntbl))
 
 (fn mag [{: x : y} v]
@@ -69,6 +69,10 @@
   (norm (v2->v2 pa #(- pb.x $1) #(- pb.y $1))))
 
 (fn love.update [dt]
+  (when current-keys.MOUSE
+    (let [(x y) (love.mouse.getPosition)]
+    (set current-keys.MOUSE.x x)
+    (set current-keys.MOUSE.x y)))
   (set circles
        (let [tbl []]
          (let [(w h _) (love.window.getMode)]
@@ -81,29 +85,27 @@
                         (do-border-collision w h)))))
          tbl)))
 
+
 (fn love.draw []
   (each [_ circle (pairs circles)]
-    (love.graphics.circle "line" circle.p.x circle.p.y circle.radius)
-    (love.graphics.print (.. "ax: " circle.a.x "\nay: " circle.a.y) 
-                          100
-                          100)))
+    (love.graphics.circle "line" circle.p.x circle.p.y circle.radius)))
 
 
  (fn love.load []
   (love.window.setMode 0 0 {:fullscreen true})
-(table.insert 
- circles {:v {:x 0 :y 0}
-          :a {:x 0 :y 0}
-          :p {:x 500 :y 500}
-          :fc 1
-          :radius 50
-          :keys {:right #(tset (. $1 :a) :x 200)
-                 :left  #(tset (. $1 :a) :x -200)
-                 :down  #(tset (. $1 :a) :y 200)
-                 :up    #(tset (. $1 :a) :y -200)
-                 :MOUSE  (fn [tbl mouse] (tset tbl :a (v2->v2 (pa->pb tbl.p mouse) #(* $1 200) #(* $1 200))))
-                 :g     #(tset $1 :radius (math.abs (+ (. $1 :radius ) 20)))
-                 :h     #(tset $1 :radius (math.abs (- (. $1 :radius) 20)))}}) 1)
+  (table.insert 
+    circles {:v {:x 0 :y 0}
+             :a {:x 0 :y 0}
+             :p {:x 500 :y 500}
+             :fc 1
+             :radius 60
+             :keys {:right #(tset (. $1 :a) :x 400)
+                    :left  #(tset (. $1 :a) :x -400)
+                    :down  #(tset (. $1 :a) :y 400)
+                    :up    #(tset (. $1 :a) :y -400)
+                    :MOUSE  (fn [tbl mouse] (tset tbl :a (v2->v2 (pa->pb tbl.p mouse) #(* $1 500) #(* $1 500))))
+                    :g     #(tset $1 :radius (+ 3 (math.abs (+ (. $1 :radius ) 7))))
+                    :h     #(tset $1 :radius (+ 3 (math.abs (- (. $1 :radius ) 7))))}}))
 
 
 ; (var tbl {:v {:x 0 :y 0}
