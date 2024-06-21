@@ -5,6 +5,9 @@
 
 (var current-keys {})
 
+(local v2->v2 (fn [v2 tx ty]
+  {:x (tx v2.x) :y (ty v2.y)}))
+
 (fn love.keyreleased [key]
   (tset current-keys key nil))
 
@@ -12,8 +15,8 @@
 (fn love.keypressed [key]
   (tset current-keys key true))
 
-(fn love.mousepressed [x y button]
-  (tset current-keys :MOUSE true))
+(fn love.mousepressed [x y b]
+  (tset current-keys :MOUSE {:x x :y y :b b}))
 
 (fn love.mousereleased [x y button]
   (tset current-keys :MOUSE nil))
@@ -46,13 +49,16 @@
         (values k v)))))
 
 
+
+
 (fn do-border-collision [tbl]
-  (let [(width height _)  (love.window.getMode)]
-    (when (> (+ tbl.p.x tbl.radius) width) (set tbl.v.x (* -1 (math.abs tbl.v.x))))
-    (when (< (- tbl.p.x tbl.radius) 0) (set tbl.v.x (math.abs tbl.v.x)))
-    (when (> (+ tbl.p.y tbl.radius) height) (set tbl.v.y (* -1 (math.abs tbl.v.y))))
-    (when (< (- tbl.p.y tbl.radius) 0) (set tbl.v.y (math.abs tbl.v.y)))
-    tbl))
+  (let [ntbl (collect [k v (pairs tbl)] (values k v))]
+    (let [(width height _)  (love.window.getMode)]
+      (when (> (+ ntbl.p.x ntbl.radius) width) (set ntbl.v.x (* -1 (math.abs ntbl.v.x))))
+      (when (< (- ntbl.p.x ntbl.radius) 0) (set ntbl.v.x (math.abs ntbl.v.x)))
+      (when (> (+ ntbl.p.y ntbl.radius) height) (set ntbl.v.y (* -1 (math.abs ntbl.v.y))))
+      (when (< (- ntbl.p.y ntbl.radius) 0) (set ntbl.v.y (math.abs ntbl.v.y)))
+    ntbl)))
 
 
 (fn pa->pb [pa pb]
@@ -72,7 +78,6 @@
                      (handle_keys circle current-keys circle.keys) dt))))
          tbl)))
 
-
 (fn love.draw []
   (each [_ circle (pairs circles)]
     (love.graphics.circle "line" circle.p.x circle.p.y circle.radius)
@@ -80,6 +85,9 @@
                           (- circle.p.x circle.radius)
                           circle.p.y 
                          (* 2 circle.radius) :center 0)))
+
+
+
  (fn love.load []
   (love.window.setMode 0 0 {:fullscreen true})
   (table.insert 
@@ -97,7 +105,7 @@
             :h     #(tset $1 :radius (math.abs (- (. $1 :radius) 20)))
             :MOUSE (fn [tbl]
                      (tset tbl :a
-                           (let [foo [(love.mouse.getPosition)]]
+                           (let [{:x mx :y mx} (. current-keys :MOUSE)]
                              (let [{: x : y} (pa->pb tbl.p {:x (. foo 1) :y (. foo 2)})] 
                                {:x (* 400 x) :y (* 400 y)}))))}}))
 
